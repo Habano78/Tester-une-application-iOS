@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct RelayanceApp: App {
-    var body: some Scene {
-        WindowGroup {
-            ListClientsView()
+        @StateObject private var container = DIContainer()
+        
+        var body: some Scene {
+                WindowGroup {
+                        ListClientsView(viewModel: ListClientViewModel(service: container.service))
+                                .environmentObject(container)
+                }
         }
-    }
 }
