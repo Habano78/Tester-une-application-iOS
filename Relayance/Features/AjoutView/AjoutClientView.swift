@@ -5,13 +5,6 @@
 //  Created by Amandine Cousin on 10/07/2024.
 //
 
-//
-//  AjoutClientView.swift
-//  Relayance
-//
-//  C'est le Câbleur : Il prépare le terrain.
-//
-
 import SwiftUI
 
 struct AjoutClientView: View {
@@ -22,11 +15,6 @@ struct AjoutClientView: View {
                 
                 let viewModel = AjoutClientViewModel(service: container.service)
                 
-                AjoutContentView(viewModel: viewModel)
+                AjoutClientContentView(viewModel: viewModel)
         }
-}
-
-#Preview {
-        AjoutClientView()
-                .environmentObject(DIContainer())
 }

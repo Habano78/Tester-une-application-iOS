@@ -13,8 +13,6 @@ struct DetailClientView: View {
     @EnvironmentObject private var container: DIContainer
     
     var body: some View {
-        // On initialise le ViewModel avec le client et le service
-        // et on le passe à la vue d'affichage
         DetailClientContentView(viewModel: DetailClientViewModel(client: client, service: container.service))
     }
 }

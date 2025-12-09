@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Client: Codable, Hashable, Identifiable {
+struct Client: Codable, Hashable, Identifiable, Equatable {
         var id =  UUID ()
         var nom: String
         var email: String
@@ -22,14 +22,14 @@ struct Client: Codable, Hashable, Identifiable {
                 case dateCreationString = "date_creation"
         }
         
-        /// Constructeur
+        //MARK: init
         init(nom: String, email: String, dateCreationString: String) {
                 self.nom = nom
                 self.email = email
                 self.dateCreationString = dateCreationString
         }
         
-        /// Fonctions
+        // Fonctions
         static func creerNouveauClient(nom: String, email: String) -> Client {
                 let dateFormatter = DateFormatter()
                 dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
@@ -37,10 +37,10 @@ struct Client: Codable, Hashable, Identifiable {
                 return Client(nom: nom, email: email, dateCreationString: dateFormatter.string(from: Date.now))
         }
         
-        //Est-ce que le client a été créé aujourd'hiui ? True/False
+        
         func estNouveauClient() -> Bool {
                 let aujourdhui = Date.now
-                let dateCreation = self.dateCreation
+                let dateCreation = dateCreation
                 
                 if aujourdhui.getYear() != dateCreation.getYear() ||
                         aujourdhui.getMonth() != dateCreation.getMonth() ||
@@ -51,7 +51,6 @@ struct Client: Codable, Hashable, Identifiable {
         }
         
         
-        // Est-ce que le client existe dans la BD ? True/False
         func clientExiste(clientsList: [Client]) -> Bool {
                 if clientsList.contains(where: { $0 == self }) {
                         return true
@@ -61,13 +60,12 @@ struct Client: Codable, Hashable, Identifiable {
         
         
         func formatDateVersString() -> String {
-                return Date.stringFromDate(self.dateCreation)
+                return Date.stringFromDate(dateCreation)
         }
         
         var emailEstValide: Bool {
-                // cette formule vérifie le format a@b.c
                 let emailRegEx = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
                 let emailPred = NSPredicate(format:"SELF MATCHES %@", emailRegEx)
-                return emailPred.evaluate(with: self.email)
+                return emailPred.evaluate(with: email)
         }
 }

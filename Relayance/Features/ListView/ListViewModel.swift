@@ -40,7 +40,7 @@ class ListClientViewModel: ObservableObject {
                 self.state = .loaded(clients)
         }
         
-        /// Rafraîchit les données sans repasser par l'état de chargement (mise à jour silencieuse)
+        /// mise à jour silencieuse
         @MainActor
         func refresh() {
                 let clients = service.clients

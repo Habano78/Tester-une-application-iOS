@@ -10,18 +10,21 @@ import SwiftUI
 
 struct DetailClientContentView: View {
         
+        //MARK: dependencies
         @StateObject private var viewModel: DetailClientViewModel
+        //MARK: in properties
         @Environment(\.dismiss) private var dismiss
         
-        // Init "Pro" pour injecter le ViewModel proprement
+        //MARK: init
         init(viewModel: DetailClientViewModel) {
                 _viewModel = StateObject(wrappedValue: viewModel)
         }
         
+        //MARK: View
         var body: some View {
                 VStack(spacing: 20) {
                         
-                        // --- Infos Client ---
+                        //
                         Image(systemName: "person.circle.fill")
                                 .resizable()
                                 .frame(width: 100, height: 100)
@@ -38,7 +41,7 @@ struct DetailClientContentView: View {
                         
                         Spacer()
                         
-                        // --- Bouton Supprimer ---
+                        //
                         Button(role: .destructive) {
                                 viewModel.supprimer()
                                 dismiss()
@@ -61,14 +64,4 @@ struct DetailClientContentView: View {
                 .navigationTitle("Détails")
                 .navigationBarTitleDisplayMode(.inline)
         }
-}
-
-// MARK: - Preview
-#Preview {
-        // On crée un ViewModel factice pour la preview
-        let mockClient = Client(nom: "Preview", email: "test@test.com", dateCreationString: "2025")
-        let mockService = DataService() // Ou un MockService si tu en as un
-        let vm = DetailClientViewModel(client: mockClient, service: mockService)
-        
-        DetailClientContentView(viewModel: vm)
 }

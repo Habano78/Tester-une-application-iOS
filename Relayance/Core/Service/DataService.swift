@@ -27,18 +27,7 @@ class DataService: ObservableObject, DataServiceProtocol {
                 self.clients = DataService.chargement(source)
         }
         
-        //MARK: public methods
-        func ajouter(client: Client) throws {
-                self.clients.append(client)
-            }
-        
-        
-        func supprimer(client: Client) {
-                self.clients.removeAll { $0.id == client.id }
-        }
-        
-        
-        //MARK: intern methods
+        //MARK: methods
         static func chargement<T: Decodable>(_ nomFichier: String) -> T {
                 let data: Data
                 
@@ -60,4 +49,21 @@ class DataService: ObservableObject, DataServiceProtocol {
                         fatalError("Impossible de parser \(nomFichier) en tant que \(T.self):\n\(error)")
                 }
         }
+        
+        //MARK: add
+        func ajouter(client: Client) throws {
+                guard client.emailEstValide else {
+                        throw ClientError.emailInvalide
+                }
+                guard !client.clientExiste(clientsList: clients) else {
+                        throw ClientError.clientExiste
+                }
+                self.clients.append(client)
+            }
+        
+        //MARK: del
+        func supprimer(client: Client) {
+                self.clients.removeAll { $0.id == client.id }
+        }
+        
 }

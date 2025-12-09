@@ -8,5 +8,6 @@
 import Foundation
 
 enum ClientError: Error {
-    case emailInvalide
+        case emailInvalide
+        case clientExiste
 }

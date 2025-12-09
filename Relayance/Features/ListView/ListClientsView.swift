@@ -18,7 +18,7 @@ struct ListClientsView: View {
         
         var body: some View {
                 NavigationStack {
-                        // APPEL DE LA SOUS-VUE ICI
+                        
                         ListContentView(viewModel: viewModel)
                                 .navigationTitle("Liste des clients")
                                 .toolbar {
