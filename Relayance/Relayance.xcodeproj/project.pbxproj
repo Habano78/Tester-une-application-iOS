@@ -142,8 +142,8 @@
 			isa = PBXGroup;
 			children = (
 				4227406F2C3BF4DC00E7522C /* App */,
-				22859F622EE1C01A000D512A /* Features */,
 				2285A15E2EE8C181000D512A /* Core */,
+				22859F622EE1C01A000D512A /* Features */,
 				2285A1572EE8BD68000D512A /* Helpers */,
 				422740802C3BF4DD00E7522C /* RelayanceTests */,
 				4227408A2C3BF4DD00E7522C /* RelayanceUITests */,
