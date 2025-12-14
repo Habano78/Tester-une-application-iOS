@@ -9,16 +9,16 @@ import SwiftUI
 
 struct ListClientsView: View {
         
-        @EnvironmentObject private var container: DIContainer
         @StateObject private var viewModel: ListClientViewModel
         
-        init(viewModel: ListClientViewModel) {
-                _viewModel = StateObject(wrappedValue: viewModel)
-        }
+        //MARK: init
+        init(service: any DataServiceProtocol) {
+                _viewModel = StateObject(wrappedValue: ListClientViewModel(service: service))
+            }
         
+        //MARK: Body
         var body: some View {
                 NavigationStack {
-                        
                         ListContentView(viewModel: viewModel)
                                 .navigationTitle("Liste des clients")
                                 .toolbar {
@@ -31,20 +31,6 @@ struct ListClientsView: View {
                                 .sheet(isPresented: $viewModel.isShowingAddClient) {
                                         AjoutClientView()
                                 }
-                                .task {
-                                        await viewModel.loadClients()
-                                }
-                                .onChange(of: viewModel.isShowingAddClient) { _, estOuvert in
-                                        if !estOuvert { viewModel.refresh() }
-                                }
                 }
         }
-}
-
-// MARK: - Preview
-#Preview {
-        let container = DIContainer()
-        
-        ListClientsView(viewModel: ListClientViewModel(service: container.service))
-                .environmentObject(container)
 }

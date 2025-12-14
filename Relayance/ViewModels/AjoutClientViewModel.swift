@@ -9,54 +9,51 @@ import Foundation
 
 class AjoutClientViewModel: ObservableObject {
         
-        //MARK: form properties
+        //MARK: properties
+        private let service: any DataServiceProtocol
+        
         @Published var nom: String = ""
         @Published var email: String = ""
-        
-        //Error
         @Published var showAlert: Bool = false
         @Published var errorMessage: String = ""
         
-        //MARK: computing
         var isFormValid: Bool {
-                return !nom.isEmpty && !email.isEmpty
+            /// vérifie que les champs ne sont pas vides
+            guard !nom.isEmpty, !email.isEmpty else { return false }
+            
+            /// vérifie le format de l'email (Regex moderne iOS 16+)
+            let emailRegex = /[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,64}/
+            let isEmailFormatValid = (try? emailRegex.wholeMatch(in: email)) != nil
+            
+            return isEmailFormatValid
         }
         
-        //MARK: dependencies
-        private let service: DataServiceProtocol
-        
         //MARK: init
-        init(service: DataServiceProtocol){
+        init(service: any DataServiceProtocol) {
                 self.service = service
         }
         
-        // MARK: methods
+        //MARK: methodes
         func ajouterClient() -> Bool {
-                
-                let nouveauClient = Client(nom: nom, email: email, dateCreationString: Date.stringFromDate(Date.now))
+        
+                let nouveauClient = Client(nom: nom, email: email, dateCreation: Date())
                 
                 do {
-                       
                         try service.ajouter(client: nouveauClient)
                         return true
-                        
                 } catch let error as ClientError {
-                        
+                        self.showAlert = true
                         switch error {
                         case .emailInvalide:
-                                self.errorMessage = "L'adresse email saisie n'est pas valide. Veuillez vérifier le format (exemple@domaine.com)."
+                                self.errorMessage = "Email invalide."
                         case .clientExiste:
-                                self.errorMessage = "Ce client existe déjà dans la base de données."
+                                self.errorMessage = "Ce client existe déjà."
                         }
-                        
-                        self.showAlert = true
                         return false
-                        
                 } catch {
-                        self.errorMessage = "Une erreur inconnue est survenue : \(error.localizedDescription)"
                         self.showAlert = true
+                        self.errorMessage = "Erreur inconnue."
                         return false
                 }
         }
-        
 }

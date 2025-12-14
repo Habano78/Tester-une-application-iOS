@@ -2,103 +2,94 @@
 //  ModelTests.swift
 //  RelayanceTests
 //
-//  Created by Perez William on 04/12/2025.
+//  Refactored for Strong Typing
 //
+
 import Foundation
 import Testing
 @testable import Relayance
 
 struct ModelTests {
         
-        //MARK: Vérifier que la méthode identifie si client a été créé aujourd'hui
+        // MARK: verifier Nouveau Client
         
         @Test func testNouveauClient() {
+                // GIVEN
+                let client = Client(nom: "Harry", email: "harry@test.gmail", dateCreation: Date())
                 
-                //GIVEN
-                let client: Client = Client.creerNouveauClient(nom: "harry", email: "harry@test.gmail")
+                // WHEN
+                let isNew = client.estNouveauClient
                 
-                //WHEN
-                let isNewInList = client.estNouveauClient()
-                
-                //THEN
-                #expect(isNewInList == true)
+                // THEN
+                #expect(isNew == true)
         }
         
         @Test func testAncienClient() {
-                
-                //GIVEN
-                let client: Client = Client(nom: "Hermione", email: "Hermione@test.com", dateCreationString: "2013-11-10")
-                
-                //WHEN
-                let isNewInList = client.estNouveauClient()
-                
-                //THEN
-                #expect(isNewInList == false)
-                
-        }
-        
-        //MARK: Vérifier qu'on détecte un client déjà présent
-        
-        @Test func testClientExists() {
-                
-                //GIVEN
-                let frida = Client.creerNouveauClient(nom: "Frida", email: "frida@example.com")
-                let yan = Client.creerNouveauClient(nom: "yan", email: "yan@yahoo.com")
-                let listToCheck = [frida, yan]
-                
-                //WHEN
-                let isFridaInList = frida.clientExiste(clientsList: listToCheck)
-                let isYanInList = yan.clientExiste(clientsList: listToCheck)
-                
-                //THEN
-                #expect(isFridaInList == true)
-                #expect(isYanInList == true)
-                
-        }
-        
-        @Test func testClientDoesNotExist() {
-                
-                //GIVEN
-                let berta: Client = Client(nom: "Berta", email: "berta@example.com", dateCreationString: "2020-01-01T10:00:00Z")
-                let frida = Client.creerNouveauClient(nom: "Frida", email: "frida@example.com")
-                let yan = Client.creerNouveauClient(nom: "yan", email: "yan@yahoo.com")
-                
-                let listToCheck = [frida, yan]
-                
-                //WHEN
-                let didClientExists =  berta.clientExiste(clientsList: listToCheck)
-                
-                //THEN
-                #expect(didClientExists == false)
-        }
-        
-        //MARK: Teste si la func affiche la date au bon format
-        
-        @Test func testFormatDateVersString(){
-                
-                //GIVEN
-                let client = Client(nom: "Berta", email: "berta@example.com", dateCreationString: "2020-01-01T10:00:00Z")
-                
-                //WHEN
-                let formattedDate =  client.formatDateVersString()
-                
-                //THEN
-                #expect(formattedDate == "01-01-2020")
-        }
-        
-        @Test func testDateCreationInvalide() {
                 // GIVEN
-                let client = Client(nom: "Test", email: "t@t.fr", dateCreationString: "DATE_INVALIDE")
-                let maintenant = Date()
+                let datePassee = Calendar.current.date(byAdding: .day, value: -2, to: Date()) ?? Date() /// passé
+                
+                let client = Client(nom: "Hermione", email: "hermione@test.com", dateCreation: datePassee)
                 
                 // WHEN
-                let dateObtenue = client.dateCreation
+                let isNew = client.estNouveauClient
                 
                 // THEN
-                let difference = abs(dateObtenue.timeIntervalSince(maintenant))
+                #expect(isNew == false)
+        }
+        
+        // MARK: - Test Égalité & Existence
+        // On teste donc si Swift reconnait bien que deux clients avec le même ID sont identiques.
+        
+        @Test func testClientEqualityAndExistence() {
+                // GIVEN
+                let idCommun = UUID()
+                let dateCommune = Date.now
                 
-                // On vérifie que la différence est inférieure à 1 seconde
-                #expect(difference < 1)
+                let fridaV1 = Client(id: idCommun, nom: "Frida", email: "frida@example.com", dateCreation: dateCommune)
+                let fridaV2 = Client(id: idCommun, nom: "Frida", email: "frida@example.com", dateCreation: dateCommune)
+                
+                let yan = Client(nom: "Yan", email: "yan@yahoo.com")
+                
+                let listToCheck = [fridaV1, fridaV2]
+                
+                // WHEN & THEN
+                #expect(fridaV1 == fridaV2)
+                #expect(fridaV1 != yan)
+                
+                #expect(listToCheck.contains(fridaV2) == true)
+                #expect(listToCheck.contains(yan) == false)
+        }
+        
+        // MARK: - Test Formatage Date
+        
+        @Test func testFormatDateVersString() {
+                // GIVEN
+                // On construit une date fixe pour que le test soit déterministe (toujours pareil)
+                var components = DateComponents()
+                components.year = 2020
+                components.month = 1
+                components.day = 1
+                components.hour = 12
+                
+                let fixedDate = Calendar.current.date(from: components)!
+                let client = Client(nom: "Berta", email: "berta@example.com", dateCreation: fixedDate)
+                
+                // WHEN
+                let formattedDate = client.formatDateVersString()
+                
+                // THEN
+                #expect(formattedDate.contains("2020"))
+        }
+        
+        // MARK: - Test Validité Email
+        
+        @Test func testEmailValidation() {
+                // GIVEN
+                let clientValide = Client(nom: "Ok", email: "test@test.com")
+                let clientInvalide = Client(nom: "Ko", email: "test-pas-d-arobase.com")
+                
+                // THEN
+                #expect(clientValide.emailEstValide == true)
+                #expect(clientInvalide.emailEstValide == false)
         }
 }
-

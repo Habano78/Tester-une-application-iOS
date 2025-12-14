@@ -7,65 +7,67 @@
 
 import Foundation
 
-
-
-//MARK: ServiceProtocol
-protocol DataServiceProtocol {
-        var clients: [Client] { get set }
+// MARK: - Protocol
+protocol DataServiceProtocol: ObservableObject {
+        var clients: [Client] { get }
         func ajouter(client: Client) throws
         func supprimer(client: Client)
 }
 
-
-//MARK: implementation
-class DataService: ObservableObject, DataServiceProtocol {
+// MARK: - Implementation
+class DataService: ObservableObject, @preconcurrency DataServiceProtocol {
         
-        //MARK: properties
         @Published var clients: [Client] = []
-        private let source: String = "Source.json"
+        private let source: String = "Source"
         
         //MARK: init
         init() {
-                self.clients = DataService.chargement(source)
+                chargerDonnees()
         }
         
-        //MARK: methods
-        static func chargement<T: Decodable>(_ nomFichier: String) -> T {
-                let data: Data
-                
-                guard let file = Bundle.main.url(forResource: nomFichier, withExtension: nil)
-                else {
-                        fatalError("Impossible de trouver \(nomFichier) dans le main bundle.")
+        private func chargerDonnees() {
+                // Vérification du nom du fichier
+                guard let url = Bundle.main.url(forResource: source, withExtension: "json") else {
+                        print("❌ ERREUR CRITIQUE : Le fichier \(source).json n'est pas trouvé dans le Bundle.")
+                        print("👉 Vérifie que 'Target Membership' est coché pour ce fichier.")
+                        return
                 }
                 
-                do {
-                        data = try Data(contentsOf: file)
-                } catch {
-                        fatalError("Impossible de charger \(nomFichier) depuis le main bundle:\n\(error)")
+                guard let data = try? Data(contentsOf: url) else {
+                        print("❌ ERREUR : Impossible de lire les données du fichier.")
+                        return
                 }
                 
+                let decoder = JSONDecoder()
+                let dateFormatter = DateFormatter()
+                dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+                dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+                dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+                
+                decoder.dateDecodingStrategy = .formatted(dateFormatter)
+                
                 do {
-                        let decoder = JSONDecoder()
-                        return try decoder.decode(T.self, from: data)
+                        self.clients = try decoder.decode([Client].self, from: data)
+                        print("✅ SUCCÈS : \(self.clients.count) clients chargés et affichés.")
                 } catch {
-                        fatalError("Impossible de parser \(nomFichier) en tant que \(T.self):\n\(error)")
+                        print("❌ ERREUR DE DÉCODAGE PRÉCISE :")
+                        print(error) // Ceci nous dira exactement quelle ligne du JSON bloque
                 }
         }
         
-        //MARK: add
+        @MainActor
         func ajouter(client: Client) throws {
-                guard client.emailEstValide else {
-                        throw ClientError.emailInvalide
-                }
-                guard !client.clientExiste(clientsList: clients) else {
-                        throw ClientError.clientExiste
-                }
-                self.clients.append(client)
-            }
+                guard client.emailEstValide else { throw ClientError.emailInvalide }
+                guard !clients.contains(where: { $0.id == client.id || $0.email == client.email }) else
+                
+                { throw ClientError.clientExiste }
+                
+                self.clients.insert(client, at: 0)
+        }
         
-        //MARK: del
+        
+        @MainActor
         func supprimer(client: Client) {
                 self.clients.removeAll { $0.id == client.id }
         }
-        
 }

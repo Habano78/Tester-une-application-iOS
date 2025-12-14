@@ -1,5 +1,5 @@
 //
-//  DetailViewModel.swift.swift
+//  DetailClientViewModel.swift.swift
 //  Relayance
 //
 //  Created by Perez William on 09/12/2025.
@@ -14,10 +14,10 @@ class DetailClientViewModel : ObservableObject {
         let client : Client
         
         //MARK: dependencies
-        private let service : DataServiceProtocol
+        private let service : any DataServiceProtocol
         
         //MARK: init
-        init(client: Client, service: DataServiceProtocol){
+        init(client: Client, service: any DataServiceProtocol){
                 self.client = client
                 self.service = service
         }

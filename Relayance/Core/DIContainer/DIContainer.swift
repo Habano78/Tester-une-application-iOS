@@ -10,9 +10,9 @@ import SwiftUI
 
 class DIContainer: ObservableObject {
         
-        let service: DataServiceProtocol
+        let service: any DataServiceProtocol
         
-        init(service: DataServiceProtocol = DataService()) {
+        init(service: any DataServiceProtocol = DataService()) {
                 self.service = service
         }
 }

@@ -3,69 +3,64 @@
 //  Relayance
 //
 //  Created by Amandine Cousin on 10/07/2024.
+//  Refactored for Performance & Safety
+//
+
+//
+//  Model.swift
+//  Relayance
+//
+//  Refactored for Auto-ID Generation
 //
 
 import Foundation
 
-struct Client: Codable, Hashable, Identifiable, Equatable {
-        var id =  UUID ()
+struct Client: Codable, Hashable, Identifiable {
+        let id: UUID
         var nom: String
         var email: String
-        private var dateCreationString: String
-        var dateCreation: Date {
-                Date.dateFromString(dateCreationString) ?? Date.now
-        }
+        let dateCreation: Date
         
         enum CodingKeys: String, CodingKey {
+                case id
                 case nom
                 case email
-                case dateCreationString = "date_creation"
+                case dateCreation = "date_creation"
         }
         
-        //MARK: init
-        init(nom: String, email: String, dateCreationString: String) {
+        // MARK: - Init Standard (Utilisé quand tu crées un client manuellement dans l'app)
+        init(id: UUID = UUID(), nom: String, email: String, dateCreation: Date = Date.now) {
+                self.id = id
                 self.nom = nom
                 self.email = email
-                self.dateCreationString = dateCreationString
+                self.dateCreation = dateCreation
         }
         
-        // Fonctions
-        static func creerNouveauClient(nom: String, email: String) -> Client {
-                let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+        // MARK: - Init de Décodage (C'est ICI que ça se joue)
+        // Ce constructeur est appelé automatiquement quand on lit le JSON
+        init(from decoder: Decoder) throws {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
                 
-                return Client(nom: nom, email: email, dateCreationString: dateFormatter.string(from: Date.now))
-        }
-        
-        
-        func estNouveauClient() -> Bool {
-                let aujourdhui = Date.now
-                let dateCreation = dateCreation
+                // 1. On récupère les champs normaux
+                self.nom = try container.decode(String.self, forKey: .nom)
+                self.email = try container.decode(String.self, forKey: .email)
+                self.dateCreation = try container.decode(Date.self, forKey: .dateCreation)
                 
-                if aujourdhui.getYear() != dateCreation.getYear() ||
-                        aujourdhui.getMonth() != dateCreation.getMonth() ||
-                        aujourdhui.getDay() != dateCreation.getDay() {
-                        return false
-                }
-                return true
+                self.id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
         }
         
-        
-        func clientExiste(clientsList: [Client]) -> Bool {
-                if clientsList.contains(where: { $0 == self }) {
-                        return true
-                }
-                return false
-        }
-        
-        
-        func formatDateVersString() -> String {
-                return Date.stringFromDate(dateCreation)
+        // MARK: - Helpers
+        var estNouveauClient: Bool {
+                Calendar.current.isDateInToday(dateCreation)
         }
         
         var emailEstValide: Bool {
-                let emailRegEx = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
-                let emailPred = NSPredicate(format:"SELF MATCHES %@", emailRegEx)
-                return emailPred.evaluate(with: email)
+                // Regex moderne pour valider l'email
+                let emailRegex = /[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,64}/
+                return (try? emailRegex.wholeMatch(in: email)) != nil
+        }
+        
+        func formatDateVersString() -> String {
+                dateCreation.formatted(date: .numeric, time: .omitted)
         }
 }

@@ -14,46 +14,46 @@ struct ModelDataTests {
         @Test func testChargementDonnesSucced() {
                 
                 //GIVEN
-                let fichierJson = "Source.json"
+                let model = DataService()
                 
                 //WHEN
-                let list : [Client] = ModelData.chargement(fichierJson)
+                /// Chargement automatique
                 
                 //THEN
-                #expect(list.isEmpty == false)
-                #expect(list.first?.nom == "Frida Kahlo")
+                #expect(model.clients.isEmpty == false)
+                #expect(model.clients.first?.nom != nil)
         }
         
         
         //MARK: verifier l'ajout d'un nouveau client
-        @Test func testAjoutClientSucced() throws {
-                
-                //GIVEN
-                let model = ModelData()  /// on instancie le gestionnaire de data
-                let nombreInitial = model.clients.count /// on compte le nombre inital de clients dans la liste
-                let newClient = Client(nom: "Berta", email: "berta@example.com", dateCreationString: "2020-01-01") /// on crée un nouveau client
+        @Test func testAjoutClientSucced() async throws {
+                // GIVEN
+                let model = DataService()
+                let nombreInitial = model.clients.count
+                let newClient = Client(nom: "Berta", email: "b@b.com", dateCreation: Date())
                 
                 //WHEN
-                try model.ajouter(client: newClient)
+                try await model.ajouter(client: newClient)
                 
                 // THEN
                 #expect(model.clients.count == nombreInitial + 1)
-                #expect(model.clients.last?.nom == "Berta")
+                #expect(model.clients.first?.nom == "Berta")
         }
         
         
+        @MainActor
         @Test func testAjoutClientFailedMailInvalid() {
                 
                 // GIVEN
-                let model = ModelData()
-                let newClient = Client(nom: "Berta", email: "berta_invalide", dateCreationString: "2020-01-01")
+                let model = DataService()
+                let newClient = Client(nom: "Berta", email: "berta_invalide", dateCreation: Date())
                 var erreurCapturee: ClientError? = nil
                 
                 // WHEN
                 do {
                         try model.ajouter(client: newClient)
                 } catch {
-                       
+                        
                         erreurCapturee = error as? ClientError
                 }
                 
@@ -62,15 +62,16 @@ struct ModelDataTests {
         }
         
         //MARK: verifier la suppression d'un client dans la liste
+        @MainActor
         @Test func testSupprimerClientSucced()  {
                 //GIVEN
-                let model = ModelData()
-                let clientToDelete = Client(nom: "Berta", email: "berta@example.com", dateCreationString: "2020-01-01")
+                let model = DataService()
+                let clientToDelete = Client(nom: "Berta", email: "berta@example.com", dateCreation: Date())
                 model.clients.append(clientToDelete)
                 let nombreDeClientsInitiaux = model.clients.count
                 
                 //WHEN
-                 model.supprimer(client: clientToDelete)
+                model.supprimer(client: clientToDelete)
                 
                 //THEN
                 #expect(model.clients.count == nombreDeClientsInitiaux - 1)

@@ -21,6 +21,11 @@ struct ListContentView: View {
                 case .loading:
                         ProgressView("Chargement des clients...")
                         
+                case .empty:
+                        ContentUnavailableView("Aucun client",
+                                               systemImage: "person.slash",
+                                               description: Text("Appuyez sur + pour ajouter un client."))
+                        
                 case .error(let message):
                         ContentUnavailableView {
                                 Label("Erreur", systemImage: "exclamationmark.triangle")
